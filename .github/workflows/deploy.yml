@@ -1,12 +1,15 @@
-name: Deploy Client
+name: Production Actions
 
 on:
   push:
     branches: [main]
 
 jobs:
-  build-and-test:
+  testAndDeployProduction:
     runs-on: ubuntu-latest
+    env:
+      working-directory: ./client
+
     steps:
       - uses: actions/checkout@v2
 
@@ -15,21 +18,29 @@ jobs:
         with:
           node-version: '12'
 
-      - uses: actions/cache@v2
+      - name: Cache Dependencies
+        uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-node-
 
-      - run: cd client/
-      - run: yarn
-      - run: yarn build
-      - run: yarn test 
+      - name: Install Dependencies
+        run: yarn
+        working-directory: ${{ env.working-directory }}
+
+      - name: Build Website
+        run: yarn build
+        working-directory: ${{ env.working-directory }}
+
+      - name: Run Unit Tests
+        run: yarn test
+        working-directory: ${{ env.working-directory }}
 
       - uses: netlify/actions/cli@master 
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         with:
-          args: deploy --dir=build --prod
+          args: deploy --dir=client/build --prod
           secrets: '["NETLIFY_AUTH_TOKEN", "NETLIFY_SITE_ID"]'

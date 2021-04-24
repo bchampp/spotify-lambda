@@ -1,10 +1,10 @@
-name: Build and Deploy to Netlify
+name: Pull Request Actions
 
 on:
   pull_request:
 
 jobs:
-  build:
+  testAndDeployPR:
     runs-on: ubuntu-18.04
     env:
       working-directory: ./client
