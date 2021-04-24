@@ -1,0 +1,28 @@
+service: spotify-auth-lambda
+
+frameworkVersion: '2'
+
+package:
+  individually: true
+
+plugins:
+  - serverless-webpack
+
+custom:
+  webpack:
+    webpackConfig: './webpack.config.js'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: ca-central-1
+
+functions:
+  login:
+    handler: 'handler.hello'
+    description: 'Login to spotify account and get an access token.'
+    events:
+      - http:
+          method: 'get'
+          path: 'login'
