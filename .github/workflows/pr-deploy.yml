@@ -38,9 +38,8 @@ jobs:
 
       - name: PR Deploy to Netlify
         uses: nwtgck/actions-netlify@v1.1
-        working-directory: ${{ env.working-directory }}
         with:
-          publish-dir: './build'
+          publish-dir: 'client/build'
           production-branch: master
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: "Deploy from GitHub Actions"
