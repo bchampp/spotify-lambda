@@ -2,9 +2,13 @@ name: Build and Deploy to Netlify
 
 on:
   pull_request:
+
 jobs:
   build:
     runs-on: ubuntu-18.04
+    env:
+      working-directory: ./client
+
     steps:
       - uses: actions/checkout@v2
 
@@ -13,25 +17,33 @@ jobs:
         with:
           node-version: '12'
 
-      - uses: actions/cache@v2
+      - name: Cache Dependencies
+        uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-node-
 
-      - run: cd client/
-      - run: yarn
-      - run: yarn build
-      - run: yarn test 
+      - name: Install Dependencies
+        run: yarn
+        working-directory: ${{ env.working-directory }}
 
-      - name: Deploy to Netlify
+      - name: Build Website
+        run: yarn build
+        working-directory: ${{ env.working-directory }}
+
+      - name: Run Unit Tests
+        run: yarn test
+        working-directory: ${{ env.working-directory }}
+
+      - name: PR Deploy to Netlify
         uses: nwtgck/actions-netlify@v1.1
         with:
           publish-dir: './build'
           production-branch: master
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: "Deploy from GitHub Actions"
-          enable-pull-request-comment: false
+          enable-pull-request-comment: true
           enable-commit-comment: true
           overwrites-pull-request-comment: true
         env:
