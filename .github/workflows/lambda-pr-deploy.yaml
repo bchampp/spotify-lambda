@@ -1,9 +1,7 @@
 name: Pull Request 🛠️
 
 on:
-  pull_request:
-    paths:
-      - 'lambda/'
+  pull_request
 
 jobs:
   testAndDeployLambda:
