@@ -1,4 +1,4 @@
-service: spotify-auth-lambda
+service: ${self:provider.stage}-spotify-auth-lambda
 
 frameworkVersion: '2'
 
@@ -7,6 +7,7 @@ package:
 
 plugins:
   - serverless-webpack
+  - serverless-dotenv-plugin
 
 custom:
   webpack:
@@ -15,14 +16,22 @@ custom:
 provider:
   name: aws
   runtime: nodejs12.x
-  stage: dev
+  stage: ${opt:stage, 'dev'}
   region: ca-central-1
 
 functions:
   login:
-    handler: 'handler.hello'
+    handler: 'handler.login'
     description: 'Login to spotify account and get an access token.'
     events:
       - http:
           method: 'get'
           path: 'login'
+
+  callback:
+    handler: 'handler.callback'
+    description: 'Callback to spotify authorization to get an access token.'
+    events:
+      - http:
+          method: 'get'
+          path: 'callback'

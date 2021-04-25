@@ -1,0 +1,48 @@
+name: Pull Request 🛠️
+
+on:
+  pull_request
+
+jobs:
+  testAndDeployLambda:
+    runs-on: ubuntu-latest
+    env:
+      working-directory: ./lambda
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12'
+
+      - name: Cache Dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
+
+      - name: Install Dependencies
+        run: yarn
+        working-directory: ${{ env.working-directory }}
+
+      - name: Run Unit Tests
+        run: yarn test
+        working-directory: ${{ env.working-directory }}
+        
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ca-central-1
+
+      - name: Install Serverless framework
+        run: npm install -g serverless
+        
+      - name: Lambda Deployment
+        run: serverless deploy --stage=pr
+        working-directory: ${{ env.working-directory }}
+         
