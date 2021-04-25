@@ -46,4 +46,10 @@ jobs:
       - name: Lambda Deployment
         run: serverless deploy --stage=prod
         working-directory: ${{ env.working-directory }}
+        env: 
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          CLIENT_REDIRECT_URI: https://spotifyauth.netlify.app
+          API_REDIRECT_URI: https://lp2ilg294l.execute-api.ca-central-1.amazonaws.com/prod/callback
+
          
