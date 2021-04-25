@@ -1,11 +1,15 @@
-name: Pull Request Actions
+name: Production 🚀
 
 on:
-  pull_request:
+  push:
+    branches: [main]
+    paths:
+      - 'client/'
 
 jobs:
-  testAndDeployPR:
-    runs-on: ubuntu-18.04
+  testAndDeployClient:
+    runs-on: ubuntu-latest
+
     env:
       working-directory: ./client
 
@@ -36,17 +40,10 @@ jobs:
         run: yarn test
         working-directory: ${{ env.working-directory }}
 
-      - name: PR Deploy to Netlify
-        uses: nwtgck/actions-netlify@v1.1
-        with:
-          publish-dir: 'client/build'
-          production-branch: master
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy from GitHub Actions"
-          enable-pull-request-comment: true
-          enable-commit-comment: true
-          overwrites-pull-request-comment: true
+      - uses: netlify/actions/cli@master 
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        timeout-minutes: 1
+        with:
+          args: deploy --dir=client/build --prod
+          secrets: '["NETLIFY_AUTH_TOKEN", "NETLIFY_SITE_ID"]'
