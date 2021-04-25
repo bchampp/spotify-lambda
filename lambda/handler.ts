@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-const http = require('http');
+import { postRequest, PostRequestOptions } from './util/post';
 const querystring = require('querystring');
 
 const client_id: string = process.env.SPOTIFY_CLIENT_ID;
@@ -8,14 +8,13 @@ const api_redirect_uri: string = process.env.API_REDIRECT_URI;
 const client_redirect_uri: string = process.env.CLIENT_REDIRECT_URI;
 
 /**
- * Method to login through spotify and retreive an access token.
+ * Method to begin Spotify Login Flow. Redirects to Spotify Authorization Page.
  * Called with GET <api>/login.
  * 
- * @param event The API Gateway Event
- * @returns An API Gateway Proxy Handler response.
+ * @param event The API Gateway Event.
+ * @returns An API Gateway Proxy Handler Response Body.
  */
 export const login = async (): Promise<APIGatewayProxyResult> => {
-  const state: string = generateRandomString(16);
   const scope: string = 'user-read-private user-read-email';
 
   const redirectLocation: string = 'https://accounts.spotify.com/authorize?' + 
@@ -24,7 +23,6 @@ export const login = async (): Promise<APIGatewayProxyResult> => {
       client_id: client_id,
       scope: scope,
       redirect_uri: api_redirect_uri,
-      state: state
     });
 
   return {
@@ -36,87 +34,47 @@ export const login = async (): Promise<APIGatewayProxyResult> => {
   };
 }
 
+/**
+ * The callback API that is called after the user has authorized the application.
+ * Exchanges the Spotify Access Code for an Access Token and returns that to client.
+ * 
+ * @param event The API Gateway Event.
+ * @returns An Api Gateawy Proxy Handler Response Body.
+ */
 export const callback = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  console.log(event);
-
   const code = event.queryStringParameters['code'] || null;
-  const state = event.queryStringParameters['state'] || null;
 
-  console.log(code);
-  console.log(state);
+  const form_data = 'code=' + code 
+    + '&redirect_uri=' + api_redirect_uri
+    + '&grant_type=authorization_code';
 
-  const authOptions = {
-    url: 'https://accounts.spotify.com/api/token',
-    form: {
-      code: code,
-      redirect_uri: client_redirect_uri,
-      grant_type: 'authorization_code'
-    },
+    // Create request options object
+  const request_options: PostRequestOptions = {
+    host: 'accounts.spotify.com',
+    path: '/api/token',
+    method: 'POST',
     headers: {
-      'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
+      'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')),
+      'Content-Type': 'application/x-www-form-urlencoded'
     },
-    json: true
   };
+  const res = await postRequest(request_options, form_data)
+  .catch(err => console.error(err));
 
-  http.request.post(authOptions, function(error, response, body) {
-    if (!error && response.statusCode === 200) {
+  const parsedResponse = JSON.parse(res);
 
-      var access_token = body.access_token,
-          refresh_token = body.refresh_token;
+  const { access_token, refresh_token } = parsedResponse;
 
-      var options = {
-        url: 'https://api.spotify.com/v1/me',
-        headers: { 'Authorization': 'Bearer ' + access_token },
-        json: true
-      };
-
-      // use the access token to access the Spotify Web API
-      http.request.get(options, function(error, response, body) {
-        console.log(body);
-      });
-
-      const redirectLocation = client_redirect_uri +
-        querystring.stringify({
-          access_token: access_token,
-          refresh_token: refresh_token
-        });
-
-        return {
-          statusCode: 301,
-          headers: {
-            Location: redirectLocation
-          },
-          body: JSON.stringify('Redirecting!'),
-        };
-    } else {
-      const redirectLocation = client_redirect_uri +
-        querystring.stringify({
-          error: 'invalid_token'
-        });
-
-        return {
-          statusCode: 301,
-          headers: {
-            Location: redirectLocation
-          },
-          body: JSON.stringify('Redirecting!'),
-        };
+  return {
+    statusCode: 302,
+    body: '',
+    headers: {
+      Location: client_redirect_uri + '/?' + 
+      querystring.stringify({
+        access_token: access_token,
+        refresh_token: refresh_token
+      })
     }
-  });
+  }
 }
 
-
-/**
- * Generates a random string containing numbers and letters
- * @param  {number} length The length of the string
- * @return {string} The generated string
- */
-const generateRandomString: string = (length: number) => {
-  var text = '';
-  var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-  for (var i = 0; i < length; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
-};
