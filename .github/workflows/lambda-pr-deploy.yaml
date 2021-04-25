@@ -39,6 +39,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ca-central-1
 
+      - name: Install Serverless framework
+        run: npm install -g serverless
+        
       - name: Lambda Deployment
         run: serverless deploy --stage=pr
         working-directory: ${{ env.working-directory }}
