@@ -7,7 +7,7 @@ function App() {
 			<header className="App-header">
 				<img src={logo} className="App-logo" alt="logo" />
 				<p>A Spotify Authentication Lambda using Serverless</p>
-				<a className="App-link" target="_blank" href="spotify.com">
+				<a className="App-link" href="https://is0y7plveb.execute-api.ca-central-1.amazonaws.com/dev/login">
 					Sign In
 				</a>
 			</header>
