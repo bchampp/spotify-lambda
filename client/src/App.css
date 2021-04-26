@@ -2,8 +2,12 @@
   text-align: center;
 }
 
+h3 {
+  font-weight: 200;
+}
 .App-logo {
-  height: 40vmin;
+  padding: 20px;
+  height: 30vmin;
   pointer-events: none;
 }
 
@@ -22,10 +26,13 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+  font-weight: 200;
 }
 
 .App-link {
-  color: #61dafb;
+  padding-top: 50px;
+  color: white;
+  text-decoration: none;
 }
 
 @keyframes App-logo-spin {
