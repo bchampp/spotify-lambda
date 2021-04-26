@@ -2,8 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 
 function App() {
-	const login_url = 'https://lp2ilg294l.execute-api.ca-central-1.amazonaws.com/prod/login'
-	console.log(login_url);
+	const login_url = 'https://lp2ilg294l.execute-api.ca-central-1.amazonaws.com/prod/login';
 
 	return (
 		<div className="App">
