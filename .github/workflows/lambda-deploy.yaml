@@ -43,23 +43,12 @@ jobs:
       - name: Install Serverless framework
         run: npm install -g serverless
 
-      - name: Create environment file
-        uses: SpicyPizza/create-envfile@v1
-        with:
-          envkey_SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
-          envkey_SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-          envkey_CLIENT_REDIRECT_URI: https://spotifyauth.netlify.app
-          envkey_API_REDIRECT_URI: https://lp2ilg294l.execute-api.ca-central-1.amazonaws.com/prod/callback
-          directory: lambda/
-          file: .env
-
       - name: Lambda Deployment
-        run: serverless deploy --stage=prod
+        run: |
+          touch .env
+          echo SPOTIFY_CLIENT_ID=${{ secrets.SPOTIFY_CLIENT_ID }} >> .env
+          echo SPOTIFY_CLIENT_SECRET=${{ secrets.SPOTIFY_CLIENT_SECRET }} >> .env
+          echo CLIENT_REDIRECT_URI=https://spotifyauth.netlify.app >> .env
+          echo API_REDIRECT_URI=https://lp2ilg294l.execute-api.ca-central-1.amazonaws.com/prod/callback >> .env
+          serverless deploy --stage=prod
         working-directory: ${{ env.working-directory }}
-        env: 
-          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
-          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-          CLIENT_REDIRECT_URI: https://spotifyauth.netlify.app
-          API_REDIRECT_URI: https://lp2ilg294l.execute-api.ca-central-1.amazonaws.com/prod/callback
-
-         
