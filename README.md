@@ -1,6 +1,6 @@
 # Spotify Authentication Lambda
 
-This repository contains a serverless application which handles the Spotify Authorization Flow. 
+This repository contains a serverless application which handles the Spotify Authorization Flow. Blah
 
 ## Lambda
 This directory contains the serverless project. 
